@@ -26,6 +26,46 @@ class ImageScience
   end
 
   ##
+  # Returns the type of the image.
+
+  def self.image_type(path)
+    case file_type(path)
+      when 0 then 'BMP'
+      when 1 then 'ICO'
+      when 2 then 'JPEG'
+      when 3 then 'JNG'
+      when 4 then 'KOALA'
+      when 5 then 'IFF'
+      when 6 then 'MNG'
+      when 7 then 'PBM'
+      when 8 then 'PBMRAW'
+      when 9 then 'PCD'
+      when 10 then 'PCX'
+      when 11 then 'PGM'
+      when 12 then 'PGMRAW'
+      when 13 then 'PNG'
+      when 14 then 'PPM'
+      when 15 then 'PPMRAW'
+      when 16 then 'RAS'
+      when 17 then 'TARGA'
+      when 18 then 'TIFF'
+      when 19 then 'WBMP'
+      when 20 then 'PSD'
+      when 21 then 'CUT'
+      when 22 then 'XBM'
+      when 23 then 'XPM'
+      when 24 then 'DDS'
+      when 25 then 'GIF'
+      when 26 then 'HDR'
+      when 27 then 'FAXG3'
+      when 28 then 'SGI'
+      when 29 then 'EXR'
+      when 30 then 'J2K'
+      when 31 then 'JP2'
+    end
+  end
+
+  ##
   # Crops an image to +left+, +top+, +right+, and +bottom+ and then
   # yields the new image.
 
@@ -41,6 +81,29 @@ class ImageScience
   # Returns the height of the image, in pixels.
 
   def height; end
+
+  ##
+  # Returns the size of one pixel of the image. Possible bit depths
+  # are 1, 4, 8, 16, 24, 32 for standard bitmaps and 16, 32, 48, 64,
+  # 96 and 128 bits for non standard bitmaps.
+
+  def depth; end
+
+  ##
+  # Returns the size of one pixel of the image. Possible bit depths
+  # are 1, 4, 8, 16, 24, 32 for standard bitmaps and 16, 32, 48, 64,
+  # 96 and 128 bits for non standard bitmaps.
+
+  def colorspace
+    case colortype
+      when 0 then depth == 1 ? 'InvertedMonochrome' : 'InvertedGrayscale'
+      when 1 then depth == 1 ? 'Monochrome' : 'Grayscale'
+      when 2 then 'RGB'
+      when 3 then 'Indexed'
+      when 4 then 'RGBA'
+      when 5 then 'CMYK'
+    end
+  end
 
   ##
   # Saves the image out to +path+. Changing the file extension will
@@ -146,6 +209,17 @@ class ImageScience
     builder.add_to_init "FreeImage_SetOutputMessage(FreeImageErrorHandler);"
 
     builder.c_singleton <<-"END"
+      VALUE file_type(char * input) {
+        FREE_IMAGE_FORMAT fif = FIF_UNKNOWN; 
+
+        fif = FreeImage_GetFileType(input, 0); 
+        if (fif == FIF_UNKNOWN) fif = FreeImage_GetFIFFromFilename(input); 
+        if (fif != FIF_UNKNOWN) return fif;
+        else return Qnil;
+      }
+    END
+
+    builder.c_singleton <<-"END"
       VALUE with_image(char * input) {
         FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
 
@@ -237,6 +311,30 @@ class ImageScience
         GET_BITMAP(bitmap);
 
         return FreeImage_GetWidth(bitmap);
+      }
+    END
+
+    builder.c <<-"END"
+      int image_type() {
+        GET_BITMAP(bitmap);
+
+        return FreeImage_GetImageType(bitmap);
+      }
+    END
+
+    builder.c <<-"END"
+      int depth() {
+        GET_BITMAP(bitmap);
+
+        return FreeImage_GetBPP(bitmap);
+      }
+    END
+
+    builder.c <<-"END"
+      int colortype() {
+        GET_BITMAP(bitmap);
+
+        return FreeImage_GetColorType(bitmap);
       }
     END
 
