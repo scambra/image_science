@@ -18,6 +18,7 @@ For more information including build steps, see http://seattlerb.rubyforge.org/}
   s.homepage = %q{http://github.com/scambra/image_science}
   s.rdoc_options = ["--main", "README.txt"]
   s.require_paths = ["lib"]
+  s.rubyforge_project =
   s.rubygems_version = %q{1.3.4}
   s.summary = %q{ImageScience is a clean and happy Ruby library that generates thumbnails -- and kicks the living crap out of RMagick}
   s.test_files = ["test/test_image_science.rb"]
